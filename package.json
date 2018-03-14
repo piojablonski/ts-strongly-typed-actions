@@ -2,8 +2,61 @@
   "name": "ts-strongly-typed-actions",
   "version": "0.1.0",
   "descriptions": "strongly typed actions and reducers for redux",
-  "main": "index.js",
   "repository": "https://github.com/piojablonski/ts-strongly-typed-actions.git",
   "author": "Piotr J <piojablonski@gmail.com>",
-  "license": "N/A"
+  "license": "N/A",
+  "main": "dist/index.js",
+  "typings": "dist/index.d.ts",
+  "scripts": {
+    "build": "rm -rf ./dist && tsc",
+    "watch": "rm -rf ./dist && tsc",
+    "precommit": "lint-staged",
+    "test-types": "typings-checker -p ./tsconfig.json ./**/*.spec.ts",
+    "test": "jest && npm run test-types",
+    "pack": "npm run build && npm pack"
+  },
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "devDependencies": {
+    "@types/jest": "^22.2.0",
+    "@types/redux": "^3.6.0",
+    "husky": "^0.14.3",
+    "jest": "^22.4.2",
+    "lint-staged": "^7.0.0",
+    "prettier": "^1.11.1",
+    "ts-jest": "^22.4.1",
+    "tslint": "^5.9.1",
+    "tslint-config-prettier": "^1.9.0",
+    "tslint-config-standard": "^7.0.0",
+    "typescript": "2.3.2",
+    "typings-checker": "^2.0.0"
+  },
+  "dependencies": {
+    "global": "^4.3.2",
+    "redux": "^3.7.2"
+  },
+  "jest": {
+    "transform": {
+      "^.+\\.tsx?$": "ts-jest"
+    },
+    "testRegex": "(/__tests__/.*|(\\.|/)(test|spec))\\.(jsx?|tsx?)$",
+    "moduleFileExtensions": [
+      "ts",
+      "tsx",
+      "js",
+      "jsx",
+      "json",
+      "node"
+    ]
+  },
+  "lint-staged": {
+    "*.{ts,tsx}": [
+      "prettier --write",
+      "./node_modules/tslint/bin/tslint --fix",
+      "git add"
+    ]
+  }
 }
