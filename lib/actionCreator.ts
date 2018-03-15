@@ -5,13 +5,14 @@ export interface AnyAction extends Redux.Action {
   data?: any // obsolete - just to be backward compatible with tarte-tatin actions shape
 }
 
-export interface Action<P> extends AnyAction {
+export interface Action<P, M = undefined> extends AnyAction {
   payload: P
+  meta: M
 }
 
-export interface ActionCreatorMeta<P> {
+export interface ActionCreator<P, M> {
   __actionType: string
-  isMatch: (action: Redux.Action) => action is Action<P>
+  isMatch: (action: Redux.Action) => action is Action<P, M>
 }
 
 // interface ActionCreatorFunc<P> {
@@ -19,28 +20,30 @@ export interface ActionCreatorMeta<P> {
 // }
 
 // export interface FunctionActionCreator<P> extends ActionCreatorMeta, ActionCreatorFunc<P> {}
-export interface PayloadActionCreator<P> extends ActionCreatorMeta<P> {
-  (payload: P): Action<P>
+export interface PayloadActionCreator<P, M = undefined> extends ActionCreator<P, M> {
+  (payload: P, meta?: M): Action<P, M>
 }
 
-export interface EmptyActionCreator extends PayloadActionCreator<undefined> {
-  (payload?: undefined): Action<undefined>
+export interface EmptyActionCreator extends PayloadActionCreator<undefined, undefined> {
+  (payload?: undefined, meta?: undefined): Action<undefined, undefined>
 }
 
 export interface ActionCreatorFactory {
   (type: string): EmptyActionCreator
   <P>(type: string): PayloadActionCreator<P>
+  <P, M>(type: string): PayloadActionCreator<P, M>
   // <P, R extends Redux.Action>(type: string, func: (type, payload: P) => R)
 }
 
-export const makeAction = (prefix = '') => <P>(type: string) => {
+export const makeAction = (prefix = '') => <P, M = undefined>(type: string) => {
   const prefixedType = prefix === '' ? type : `${prefix}/${type}`
-  const actionCreator: PayloadActionCreator<P> = ((p: P) => ({
+  const actionCreator: PayloadActionCreator<P, M> = ((p: P, m: M) => ({
     payload: p,
+    meta: m,
     type: prefixedType
   })) as any
   actionCreator.__actionType = prefixedType
-  actionCreator.isMatch = (action: Redux.Action): action is Action<P> => {
+  actionCreator.isMatch = (action: Redux.Action): action is Action<P, M> => {
     return action.type === prefixedType
   }
   return actionCreator
@@ -71,7 +74,7 @@ export const makeAction = (prefix = '') => <P>(type: string) => {
 export const isAction = <T>(
   action: Redux.Action,
   actionCreator: (...args: any[]) => T
-): action is T & Redux.Action => {
+): action is T & { type: actionCreator.__actionType } => {
   return action.type === (actionCreator as any).__actionType
 }
 

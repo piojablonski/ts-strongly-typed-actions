@@ -1,5 +1,5 @@
 Arguments: 
-  /usr/local/bin/node /usr/local/bin/yarn build
+  /usr/local/bin/node /usr/local/bin/yarn test
 
 PATH: 
   /Users/piotrjablonski/bin:/usr/local/bin:/users/piotrjablonski/.local/bin:/usr/local/bin:/usr/bin:/bin:/usr/sbin:/sbin:/usr/local/share/dotnet:/opt/X11/bin:/Library/Frameworks/Mono.framework/Versions/Current/Commands
@@ -4009,7 +4009,7 @@ Trace:
   Error: Command failed.
   Exit code: 1
   Command: sh
-  Arguments: -c rm -rf ./dist && tsc
+  Arguments: -c jest && npm run test-types
   Directory: /Users/piotrjablonski/Projekty/ts-strongly-typed-actions
   Output:
   

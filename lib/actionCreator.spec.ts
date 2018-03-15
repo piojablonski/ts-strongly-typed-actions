@@ -15,6 +15,12 @@ describe('actions', () => {
     expect(actual).toEqual(expected)
   })
 
+  it('should create an action with payload and meta', () => {
+    const expected = { type: 'tasks/ACTION', payload: 1, meta: { foo: 'bar' } }
+    const actual = actionCreator<number, { foo: string }>('ACTION')(1, { foo: 'bar' })
+    expect(actual).toEqual(expected)
+  })
+
   // it('should create an action with payload', () => {
   //   const expected = { type: 'tasks/ACTION', payload: 1 }
   //   const actual = actionCreator('ACTION', (d: number) => ({ payload: d}))(1)
@@ -31,6 +37,9 @@ describe('usage', () => {
     if (creator.isMatch(incomingAction)) {
       // $ExpectType number
       incomingAction.payload
+
+      // $ExpectType undefined
+      incomingAction.meta
     }
   })
 
@@ -40,6 +49,19 @@ describe('usage', () => {
     if (creator.isMatch(incomingAction)) {
       // $ExpectType { foo: string; bar: number[]; }
       incomingAction.payload
+      // $ExpectType undefined
+      incomingAction.meta
+    }
+  })
+
+  it('should apply data guard for a structure payload and meta', () => {
+    const incomingAction: Action = { type: 'ACTION', payload: 1, meta: { foo: 'bar' } } as any
+    const creator = actionCreator<{ foo: string; bar: number[] }, { foo: string }>('ACTION')
+    if (creator.isMatch(incomingAction)) {
+      // $ExpectType { foo: string; bar: number[]; }
+      incomingAction.payload
+      // $ExpectType { foo: string; }
+      incomingAction.meta
     }
   })
 
