@@ -16,8 +16,8 @@
     "experimentalDecorators": true,
     "jsx": "react",
     "outDir": "dist",
-    "types": ["jest", "redux"],
-    "declaration": true
+    "declaration": true,
+    "types": ["jest"]
   },
   "formatCodeOptions": {
     "indentSize": 2,
@@ -33,13 +33,6 @@
     "insertSpaceAfterOpeningAndBeforeClosingNonemptyParenthesis": true,
     "placeOpenBraceOnNewLineForFunctions": false,
     "placeOpenBraceOnNewLineForControlBlocks": false
-  },
-  "lint-staged": {
-    "*.{ts,tsx}": [
-      "prettier --write",
-      "./node_modules/tslint/bin/tslint --fix",
-      "git add"
-    ]
   },
   "include": [
     "index.ts"

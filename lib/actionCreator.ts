@@ -14,12 +14,6 @@ export interface ActionCreator<P, M> {
   __actionType: string
   isMatch: (action: Redux.Action) => action is Action<P, M>
 }
-
-// interface ActionCreatorFunc<P> {
-//   (type: string): (...args: any[]): Action<P>
-// }
-
-// export interface FunctionActionCreator<P> extends ActionCreatorMeta, ActionCreatorFunc<P> {}
 export interface PayloadActionCreator<P, M = undefined> extends ActionCreator<P, M> {
   (payload: P, meta?: M): Action<P, M>
 }
@@ -29,10 +23,18 @@ export interface EmptyActionCreator extends PayloadActionCreator<undefined, unde
 }
 
 export interface ActionCreatorFactory {
-  (type: string): EmptyActionCreator
-  <P>(type: string): PayloadActionCreator<P>
-  <P, M>(type: string): PayloadActionCreator<P, M>
-  // <P, R extends Redux.Action>(type: string, func: (type, payload: P) => R)
+  makeAction: {
+    (type: string): EmptyActionCreator
+    <P>(type: string): PayloadActionCreator<P>
+    <P, M>(type: string): PayloadActionCreator<P, M>
+    // <P, R extends Redux.Action>(type: string, func: (type, payload: P) => R)
+  }
+  makeActionWithFunction: {
+    <Z extends Object /*, F extends (args: any) => Z*/>(
+      type: string,
+      func: (...args: any[]) => Z
+    ): MakeActionWithFunctionCreatorResult<Z>
+  }
 }
 
 export const makeAction = (prefix = '') => <P, M = undefined>(type: string) => {
@@ -49,37 +51,46 @@ export const makeAction = (prefix = '') => <P, M = undefined>(type: string) => {
   return actionCreator
 }
 
-// export function makeActionFunc<P>(type: string, func: ActionCreatorFunc<P>) {
-//   const actionCreator: FunctionActionCreator<P> =
+export interface MakeActionWithFunctionCreatorResult<Z> {
+  (...args: any[]): Z & AnyAction
+  __actionType: string
+  isMatch: (action: Redux.Action) => action is Z & AnyAction
+}
 
-//   actionCreator.__actionType = type
-//   actionCreator.isMatch = (action: Redux.Action): action is Action<P> => {
-//     return action.type === type
-//   }
-//   return actionCreator
+// export interface MakeActionWithFunctionCreator<Z> {
+
 // }
 
-// export function makeActionFn<AP extends { payload: any }>(type: string) {
-// const f1 = (fn: (...args: any[]) => AP) => {
-//   const actionCreator: (...args: any[]) => AP & Redux.Action = (...args: any[]) => ({
-//     ...(fn as any)(...args),
-//     type
-//   })
-//   actionCreator['__actionType'] = type
-//   return actionCreator
-// }
-// return f1
-// }
+export const makeActionWithFunction = (prefix = '') => <
+  Z extends Object /*, F extends (...args: any[]) => Z*/
+>(
+  type: string,
+  f: (...args: any[]) => Z
+) /*: (...args: any[]) => Z & AnyAction */ => {
+  const prefixedType = prefix === '' ? type : `${prefix}/${type}`
+
+  const actionCreator: MakeActionWithFunctionCreatorResult<Z> = ((...args: any[]) => ({
+    ...(f(...args) as any),
+    type: prefixedType
+  })) as any
+
+  actionCreator.__actionType = prefixedType
+  actionCreator.isMatch = (action: Redux.Action): action is Z & AnyAction => {
+    return action.type === prefixedType
+  }
+  return actionCreator
+}
 
 export const isAction = <T>(
   action: Redux.Action,
   actionCreator: (...args: any[]) => T
-): action is T & { type: actionCreator.__actionType } => {
+): action is T & Redux.Action => {
   return action.type === (actionCreator as any).__actionType
 }
 
 export function actionCreatorFactory(prefix = ''): ActionCreatorFactory {
-  return makeAction(prefix)
+  return {
+    makeAction: makeAction(prefix),
+    makeActionWithFunction: makeActionWithFunction(prefix)
+  }
 }
-
-// export const isActionC = curry2(isAction)

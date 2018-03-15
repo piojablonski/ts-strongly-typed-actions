@@ -35,7 +35,6 @@
     "typings-checker": "^2.0.0"
   },
   "dependencies": {
-    "global": "^4.3.2",
     "redux": "^3.7.2"
   },
   "jest": {
