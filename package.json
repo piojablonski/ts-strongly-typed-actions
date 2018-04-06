@@ -1,9 +1,9 @@
 {
   "name": "ts-strongly-typed-actions",
-  "version": "0.1.0",
+  "version": "0.11.0",
   "descriptions": "strongly typed actions and reducers for redux",
   "repository": "https://github.com/piojablonski/ts-strongly-typed-actions.git",
-  "author": "Piotr J <piojablonski@gmail.com>",
+  "author": "Piotr Jablonski <piojablonski@gmail.com>",
   "license": "N/A",
   "main": "dist/index.js",
   "typings": "dist/index.d.ts",

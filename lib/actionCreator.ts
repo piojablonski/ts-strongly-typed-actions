@@ -10,7 +10,7 @@ export interface Action<P, M = undefined> extends AnyAction {
   meta: M
 }
 
-export interface ActionCreator<P, M> {
+export interface ActionCreator<P, M = undefined> {
   __actionType: string
   isMatch: (action: Redux.Action) => action is Action<P, M>
 }
@@ -22,6 +22,9 @@ export interface EmptyActionCreator extends PayloadActionCreator<undefined, unde
   (payload?: undefined, meta?: undefined): Action<undefined, undefined>
 }
 
+export interface MakeActionWithFunctionDef {
+  <Z extends Object, F>(type: string, func: (args: F) => Z): MakeActionWithFunctionCreator<Z, F>
+}
 export interface ActionCreatorFactory {
   makeAction: {
     (type: string): EmptyActionCreator
@@ -29,12 +32,7 @@ export interface ActionCreatorFactory {
     <P, M>(type: string): PayloadActionCreator<P, M>
     // <P, R extends Redux.Action>(type: string, func: (type, payload: P) => R)
   }
-  makeActionWithFunction: {
-    <Z extends Object /*, F extends (args: any) => Z*/>(
-      type: string,
-      func: (...args: any[]) => Z
-    ): MakeActionWithFunctionCreatorResult<Z>
-  }
+  makeActionWithFunction: MakeActionWithFunctionDef
 }
 
 export const makeAction = (prefix = '') => <P, M = undefined>(type: string) => {
@@ -51,8 +49,8 @@ export const makeAction = (prefix = '') => <P, M = undefined>(type: string) => {
   return actionCreator
 }
 
-export interface MakeActionWithFunctionCreatorResult<Z> {
-  (...args: any[]): Z & AnyAction
+export interface MakeActionWithFunctionCreator<Z, F> {
+  (args: F): Z & AnyAction
   __actionType: string
   isMatch: (action: Redux.Action) => action is Z & AnyAction
 }
@@ -61,16 +59,13 @@ export interface MakeActionWithFunctionCreatorResult<Z> {
 
 // }
 
-export const makeActionWithFunction = (prefix = '') => <
-  Z extends Object /*, F extends (...args: any[]) => Z*/
->(
-  type: string,
-  f: (...args: any[]) => Z
-) /*: (...args: any[]) => Z & AnyAction */ => {
+export const makeActionWithFunction: (p: string) => MakeActionWithFunctionDef = (
+  prefix = ''
+): MakeActionWithFunctionDef => <Z extends Object, F>(type: string, f: (args: F) => Z) => {
   const prefixedType = prefix === '' ? type : `${prefix}/${type}`
 
-  const actionCreator: MakeActionWithFunctionCreatorResult<Z> = ((...args: any[]) => ({
-    ...(f(...args) as any),
+  const actionCreator: MakeActionWithFunctionCreator<Z, F> = ((args: F) => ({
+    ...(f(args) as any),
     type: prefixedType
   })) as any
 
@@ -81,8 +76,8 @@ export const makeActionWithFunction = (prefix = '') => <
   return actionCreator
 }
 
-export const isAction = <T>(
-  action: Redux.Action,
+export const isType = <T>(
+  action: AnyAction,
   actionCreator: (...args: any[]) => T
 ): action is T & Redux.Action => {
   return action.type === (actionCreator as any).__actionType

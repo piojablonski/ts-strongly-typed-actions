@@ -7,18 +7,22 @@ describe('actions', () => {
   const { makeAction, makeActionWithFunction } = ac.actionCreatorFactory('tasks')
   it('should create an empty action', () => {
     const expected = { type: 'tasks/EMPTY_ACTION' }
+
     const actual = makeAction('EMPTY_ACTION')()
     expect(actual).toEqual(expected)
   })
   it('should create an action with payload', () => {
     const expected = { type: 'tasks/ACTION', payload: 1 }
+
     const actual = makeAction<number>('ACTION')(1)
     expect(actual).toEqual(expected)
   })
 
   it('should create an action with payload and meta', () => {
     const expected = { type: 'tasks/ACTION', payload: 1, meta: { foo: 'bar' } }
-    const actual = makeAction<number, { foo: string }>('ACTION')(1, { foo: 'bar' })
+
+    const action = makeAction<number, { foo: string }>('ACTION')
+    const actual = action(1, { foo: 'bar' })
     expect(actual).toEqual(expected)
   })
 
@@ -89,16 +93,21 @@ describe('usage', () => {
 
   it('should make action with function', () => {
     const incomingAction = { type: 'tasks/ACTION', payload: { result: 'aaa' } } as any
-    const creator = makeActionWithFunction('ACTION', (foo: string) => {
-      return {
-        payload: { result: foo }
+    const creator = makeActionWithFunction(
+      'ACTION',
+      ({ foo, bar }: { foo: string; bar: number }) => {
+        return {
+          payload: { result: foo, result2: bar }
+        }
       }
-    })
+    )
 
     if (creator.isMatch(incomingAction)) {
-      // $ExpectType { payload: { result: string; }; } & AnyAction
+      // $ExpectType { payload: { result: string; result2: number; }; } & AnyAction
       incomingAction
     }
+    // $ExpectType ({ foo: string; bar: number; }) => { payload: { result: string; }; } & AnyAction
+    creator // ({ foo: 'aaa', bar: 1})
   })
 })
 /* tslint:enable */
